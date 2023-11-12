@@ -1,12 +1,45 @@
 const express = require("express");
+const fs = require("fs");
 const users = require("./MOCK_DATA.json");
 
 const app = express();
 const PORT = 8000;
+
+// Middleware 
+app.use(express.urlencoded({ extended: false })); //otherwise the data we'll get in as response body will be undefined
+
 // Routes 
 
 //with out /api it i.e./users it will render htmlDoc
 // with /api/users it'll send json, perfect for hybrid server (mob+web)
+
+//Grouped
+app.route("/api/users/:id")
+    .get((req, res) => {
+        const id = Number(req.params.id);
+        const user = users.find((user) => user.id == id);
+        return res.json(user);
+    })
+    .patch((req, res) => {
+        const id = Number(req.params.id);
+        const index = users.findIndex((user) => user.id == id);
+        console.log(users[index]);
+        users[index].first_name = req.body.first_name;
+        users[index].email = req.body.email;
+        fs.writeFile('./MOCK_DATA', JSON.stringify(users), (err, result) => {
+            return res.json({ status: "used edited", user: users[index] });
+        })
+
+
+    })
+    .delete((req, res) => {
+        const id = Number(req.params.id);
+        const index = users.findIndex(user => user.id == id);
+        users.splice(index, 1);
+        fs.writeFile('./MOCK_DATA', JSON.stringify(users), (err, result) => {
+            return res.json({ status: "User Deleted ", userId: index + 1 })
+        })
+    });
 
 app.get("/api/users", (req, res) => {
     return res.json(users);
@@ -20,22 +53,13 @@ app.get("/users", (req, res) => {
     res.send(html);
 })
 
-app.get("/api/users/:id", (req, res) => {
-    id = Number(req.params.id);
-    const user = users.find((user) => user.id == id);
-    return res.json(user);
-})
-
 app.post("/api/users", (req, res) => {
-    return res.json({ status: "Pending" });
-})
+    const body = req.body;
+    users.push({ ...body, id: users.length + 1 })
+    fs.writeFile('./MOCK_DATA', JSON.stringify(users), (err, result) => {
+        return res.json({ status: "Sucess", id: users.length });
+    })
 
-app.patch("/api/users/:id", (req, res) => {
-    return res.json({ status: "Pending" });
-});
-
-app.delete("api/users/:id", (req, res) => {
-    return res.json({ status: "Pending" });
 })
 
 app.listen(PORT, () => console.log(`server started at PORT ${PORT}`));
