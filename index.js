@@ -29,6 +29,7 @@ app.route("/api/users/:id")
     .get((req, res) => {
         const id = Number(req.params.id);
         const user = users.find((user) => user.id == id);
+        if (!user) return res.status(404).json({ error: "User not found" })
         return res.json(user);
     })
     .patch((req, res) => {
@@ -67,9 +68,12 @@ app.get("/users", (req, res) => {
 
 app.post("/api/users", (req, res) => {
     const body = req.body;
+    if (!body.first_name || !body.last_name || !body.email || !body.gender || !body.job_title) {
+        return res.status(400).json({ msg: "The infromation is missing" })
+    }
     users.push({ ...body, id: users.length + 1 })
     fs.writeFile('./MOCK_DATA', JSON.stringify(users), (err, result) => {
-        return res.json({ status: "Sucess", id: users.length });
+        return res.status(201).json({ status: "Sucess", id: users.length });
     })
 
 })
