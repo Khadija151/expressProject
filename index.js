@@ -8,6 +8,17 @@ const PORT = 8000;
 // Middleware 
 app.use(express.urlencoded({ extended: false })); //otherwise the data we'll get in as response body will be undefined
 
+app.use((req, res, next) => {
+    fs.appendFile('./requestLogs', `\n${Date.now()}: ${req.ip}: ${req.method}: ${req.path}`, (err, res) => {
+        next(); //otherwise request will stuck
+    })
+});
+
+app.use((req, res, next) => {
+    console.log("Hello from middleware 2");
+    next();
+})
+
 // Routes 
 
 //with out /api it i.e./users it will render htmlDoc
