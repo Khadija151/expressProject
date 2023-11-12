@@ -53,6 +53,7 @@ app.route("/api/users/:id")
     });
 
 app.get("/api/users", (req, res) => {
+    res.setHeader("X-MyName", "Khadija Ishaq");
     return res.json(users);
 })
 
